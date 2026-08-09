@@ -1,6 +1,6 @@
 # Architecture
 
-Гибрид: hot path на edge, управление идентичностями, enrollment, model rollout и аудит — в центре.
+Гибридная архитектура: hot path на edge, управление идентичностями, enrollment, версии моделей, аудит и аналитика — в центре.
 
 ```mermaid
 flowchart LR
@@ -12,8 +12,18 @@ flowchart LR
     D -->|manual_review| G[Guard UI]
     D --> A[Local audit buffer]
     A --> CA[Central audit log]
-    CS[Central employee service] -->|templates/policy updates| E
+    CS[Central employee service] -->|templates + policy updates| E
 ```
 
-Hot path: camera → detect → quality → alignment → liveness → embedding → ANN → policy decision → turnstile.
-Async: шаблоны/policy, аудит, мониторинг, model rollout, аналитика.
+## Hot path
+Camera → face detect → quality → alignment → liveness → embedding → ANN search → policy decision → turnstile.
+
+## Async
+- обновление шаблонов и access policy;
+- централизованный audit log;
+- monitoring;
+- model rollout;
+- аналитика качества.
+
+## Offline
+Свежий кеш допускает ограниченную работу. Старый кеш, недоступность модели/ANN или сомнительный кейс → `manual_review` / card fallback, но не auto-allow.

@@ -1,16 +1,20 @@
 # ML design
 
-Pipeline: face detection → quality → alignment → liveness → embedding → one-to-many ANN → decision rules.
+Pipeline: face detection → quality estimation → alignment → liveness → embedding → one-to-many ANN search → decision rules.
 
-На проходной нужна identification, а не только verification: поиск сотрудника среди разрешённой базы.
+На проходной нужна identification: система ищет человека среди базы разрешённых сотрудников.
 
-Baseline: готовые предобученные модели + FAISS/HNSW-like ANN. В PoC эти части mock.
+Baseline: готовые предобученные модели для detection/liveness/embeddings, ANN — FAISS/HNSW-like индекс. В PoC эти части упрощены mock-эмбеддингами и полным перебором маленькой базы.
 
-Исходы:
-- `allow`: quality/liveness OK, высокий match и достаточный margin;
-- `manual_review`: low quality, borderline liveness, weak margin, degraded mode;
-- `deny`: spoof / policy deny / match ниже порога.
+Три исхода:
+- `allow`: высокий match, достаточный margin, quality/liveness OK;
+- `manual_review`: низкое качество, borderline liveness, слабый margin, degraded mode;
+- `deny`: spoof / отсутствие разрешения / низкий match.
+
+Цена false accept выше false reject, поэтому allow threshold выбирается консервативно.
 
 Метрики: FAR, FRR, EER, ROC/PR, manual review rate, latency.
 
-Validation: split по личностям, а не по кадрам; разные камеры, дни, освещение и ракурсы. LLM не нужен в hot path allow/deny: решение должно быть быстрым, детерминированным и аудируемым.
+Validation: split по личностям, разные камеры, дни, освещение, маски/очки и ракурсы. Delayed labels: ручные проверки охраны, проход по карте после отказа, жалобы сотрудников.
+
+LLM не нужен в hot path `allow/deny`: решение должно быть детерминированным, быстрым и аудируемым.
